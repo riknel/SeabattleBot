@@ -360,6 +360,8 @@ class Robot:
                 logging.error("Can't create table")
                 return "Something went wrong"
 
+        elif cmd == "ships":
+            return self.print_rest_ships()
         elif self.win_me or self.win_enemy:
             logging.warning("Users message is incorrect")
             return "The gave is over. \n If you want to play again write 'play'"
@@ -379,8 +381,7 @@ class Robot:
             else:
                 logging.warning("Users message is incorrect")
                 return "It is incorrect message. Try again"
-        elif cmd == "ships":
-            return self.print_rest_ships()
+
         else:
             logging.warning("Users message is incorrect")
             return "It is incorrect message. Try again"
