@@ -96,6 +96,13 @@ class Robot:
             if free_cells.count(cell) > 0:
                 free_cells.remove(cell)
 
+    def print_rest_ships(self):
+        result = ''
+        for ship in self.rest_ships:
+            for cell in ship:
+                result += '(' + str(cell[0]) + '' + str(cell[1]) + '), '
+            result += "\n"
+
     def print_table(self):
         for i in range(self.size):
             for j in range(self.size):
@@ -194,8 +201,8 @@ class Robot:
                 ship.remove(cell)
                 result = len(ship)
                 if result == 0:
-                    for deck in ship :
-                        self.table[deck[0]][deck[1]] = '#'
+                    #for deck in ship :
+                    #    self.table[deck[0]][deck[1]] = '#'
                     self.rest_ships.remove(ship)
                 return result
 
@@ -371,6 +378,8 @@ class Robot:
             else:
                 logging.warning("Users message is incorrect")
                 return "It is incorrect message. Try again"
+        elif cmd == "ships":
+            return self.print_rest_ships()
         else:
             logging.warning("Users message is incorrect")
             return "It is incorrect message. Try again"
