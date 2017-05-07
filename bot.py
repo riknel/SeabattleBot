@@ -100,8 +100,9 @@ class Robot:
         result = ''
         for ship in self.rest_ships:
             for cell in ship:
-                result += '(' + str(cell[0]) + '' + str(cell[1]) + '), '
+                result += "({} {}), ".format(str(cell[0]), str(cell[1]))
             result += "\n"
+        return result
 
     def print_table(self):
         for i in range(self.size):
