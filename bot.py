@@ -100,7 +100,7 @@ class Robot:
         result = ''
         for ship in self.rest_ships:
             for cell in ship:
-                result += "[ {} {} ], ".format(str(cell[0]), str(cell[1]))
+                result += "[ {} {} ], ".format(str(cell[0] + 1), str(chr(cell[1] + ord('A'))))
             result += "\n"
         return result
 
@@ -115,9 +115,9 @@ class Robot:
         if self.table[cell[0]][cell[1]] == '@' or self.table[cell[0]][cell[1]] == '*' or self.table[cell[0]][cell[1]] == '#':
             logging.info("User reapeated his move")
             if self.table[cell[0]][cell[1]] == '@' or self.table[cell[0]][cell[1]] == '#':
-                return "injure \n But you made this move before"
+                answer = "injure \n But you made this move before"
             elif self.table[cell[0]][cell[1]] == '*':
-                return "miss \n But you made this move before"
+                answer = "miss \n But you made this move before"
         if self.table[cell[0]][cell[1]] == 2:
             if self.injure_my_ship(cell) == 0:
                 answer = "kill"
@@ -137,7 +137,7 @@ class Robot:
             return "You made a mistake in your answers"
         self.my_previous_step = cell
         logging.info("Bot chose a cell: (" + str(cell[0]) + ' ' + str(cell[1]) + ")")
-        return answer + "\n" + str(cell[0] + 1) + ' ' + str(chr(ord('A') + cell[1]))
+        return  "{} \n {} {}".format(answer, str(cell[0] + 1), str(chr(ord('A') + cell[1])))
 
     def my_step(self):
         try:
@@ -202,8 +202,6 @@ class Robot:
                 ship.remove(cell)
                 result = len(ship)
                 if result == 0:
-                    #for deck in ship :
-                    #    self.table[deck[0]][deck[1]] = '#'
                     self.rest_ships.remove(ship)
                 return result
 
