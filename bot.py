@@ -358,7 +358,8 @@ class Robot:
                 logging.error("Can't create table")
                 return "Something went wrong"
 
-        elif cmd == "ships":
+        elif cmd.lower() == "ships":
+            logging.info("User requests ships")
             return self.print_rest_ships()
         elif self.win_me or self.win_enemy:
             logging.warning("Users message is incorrect")
