@@ -12,6 +12,7 @@ ACCESS_TOKEN = "EAAEUY1nxzTEBAAlfrs3CrXTwUYjwfTA93cAFgBQcfhjHeRCi20t8k31P5jEDMXc
 VER_CODE = "secret"
 stickers = ["^_^", ":)", ";)", ":|", ":/", ":(", ":o", "o_o"]
 
+
 def reply(user_id, msg):
     data = {
         "recipient": {"id": user_id},
@@ -23,6 +24,7 @@ def reply(user_id, msg):
     else:
         logging.error(resp.content)
 
+
 @app.route('/', methods=['GET'])
 def handle_verification():
     logging.info("Handle verification")
@@ -32,6 +34,7 @@ def handle_verification():
     else:
         logging.critical("Verification failed")
         return 'Error, wrong validation token.'
+
 
 @app.route('/', methods=['POST'])
 def handle_incoming_messages():
@@ -45,16 +48,13 @@ def handle_incoming_messages():
             logging.info("Sticker!")
             reply(sender, random.choice(stickers))
             continue
-    try:
-        logging.info("Bot message")
-        reply(sender, robot.command(message))
-    except Exception as e:
-        logging.error("Unexpected error.")
+        try:
+            logging.info("Bot message")
+            reply(sender, robot.command(message))
+        except Exception as e:
+            logging.error("Unexpected error.")
     return "ok"
 
-#Пример сообщения
-#{'object': 'page', 'entry': [{'id': '160904671107139', 'time': 1494157071673, 'messaging': [{'sender': {'id': '1300267486725167'}, 'recipient': {'id': '160904671107139'}, 'timestamp': 1494157071559, 'message': {'mid': 'mid.$cAADIoWQ2PB1iE_jcx1b4rOUeIpZf', 'seq': 1916, 'text': '1 b'}}]}]}
-#b'{"recipient_id":"1300267486725167","message_id":"mid.$cAADIoWQ2PB1iE_jgfVb4rOYS4Pfg"}'
 
 def handle_data(data):
     info = json.loads(data)
@@ -69,4 +69,3 @@ def handle_data(data):
 
 if __name__ == '__main__':
     app.run(debug=True)
-

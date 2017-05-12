@@ -2,13 +2,11 @@ import random
 import logging
 logging.basicConfig(filename="info.log", filemode='w', level=logging.DEBUG)
 
-#https://peaceful-atoll-58092.herokuapp.com/
 
 class Robot:
-    def __init__(self, _size=10):
+    def __init__(self, size_=10):
         logging.info("Bot created")
-        self.size = _size
-        self.mode = 'easy'
+        self.size = size_
         self.ships = []
         self.rest_ships = []
         self.enemy_ships = []
@@ -23,40 +21,32 @@ class Robot:
         self.table = []
         self.enemy_rest_cells = []
         self.enemy_table = []
-        self.enemy_ships_size = []
+        self.ships_size = self.enemy_ships_size = [4] + [3] * 2 + [2] * 3 + [1] * 4
 
     def start(self):
         logging.info("Start the game")
         self.generate_table()
         self.enemy_table = [[0] * self.size for i in range(self.size)]
-        self.enemy_rest_cells = [(i, j) for i in range(0, self.size) for j in range(0, self.size)]
-        self.enemy_ships_size = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
+        self.enemy_rest_cells = [(i, j) for i in range(self.size) for j in range(self.size)]
 
     def generate_table(self):
         logging.info("Creating table")
         my_table = [[0] * self.size for i in range(self.size)]
-        free_cells = [(i, j) for i in range(0, self.size) for j in range(0, self.size)]
+        free_cells = [(i, j) for i in range(self.size) for j in range(self.size)]
 
-        # ставим корабли
-        self.generate_ship(free_cells, my_table, 4)
-        self.generate_ship(free_cells, my_table, 3)
-        self.generate_ship(free_cells, my_table, 3)
-        self.generate_ship(free_cells, my_table, 2)
-        self.generate_ship(free_cells, my_table, 2)
-        self.generate_ship(free_cells, my_table, 2)
-        self.generate_ship(free_cells, my_table, 1)
-        self.generate_ship(free_cells, my_table, 1)
-        self.generate_ship(free_cells, my_table, 1)
-        self.generate_ship(free_cells, my_table, 1)
+        for size in self.ships_size:
+            self.generate_ship(free_cells, my_table, size)
 
         self.table = my_table
 
     def generate_ship(self, free_cells, my_table, size_ship):
-        logging.info("Generation ship of size" + str(size_ship))
+        logging.info("Generation ship of size {}".format(size_ship))
+
         # будем рассматривать только 2 направления от выбранной клетки - вниз и вправо
         ship_put = False
-        while not ship_put:
+        curr_cell = None
 
+        while not ship_put:
             curr_cell = random.choice(free_cells)
             correct_directions = []
             if curr_cell[0] + size_ship <= self.size:
@@ -90,34 +80,30 @@ class Robot:
         self.rest_ships.append(current_ship)
 
     def delete_used_cells(self, free_cells, curr_cell):
-        all_directions = [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1), (1, -1), (1, 1), (-1, -1), (-1, 1)]
+        all_directions = [(first, second) for first in [-1, 0, 1] for second in [-1, 0, 1]]
         for direction in all_directions:
             cell = (curr_cell[0] + direction[0], curr_cell[1] + direction[1])
             if free_cells.count(cell) > 0:
                 free_cells.remove(cell)
 
-    def print_rest_ships(self):
-        result = ''
-        for ship in self.rest_ships:
-            for cell in ship:
-                result += "[ {} {} ], ".format(str(cell[0] + 1), str(chr(cell[1] + ord('A'))))
-            result += "\n"
-        return result
-
-    def print_table(self):
-        for i in range(self.size):
-            for j in range(self.size):
-                print(self.table[i][j], end=' ')
-            print('\n')
+    def get_rest_ships(self, all_ships=False):
+        # result = ''
+        ships = self.ships if all_ships else self.rest_ships
+        # for ship in ships:
+        #     for cell in ship:
+        #         result += "[ {} {} ], ".format(str(cell[0] + 1), str(chr(cell[1] + ord('A'))))
+        #     result += "\n"
+        return '\n'.join(list(map(lambda ship: ', '.join(list(map(
+            lambda cell: "{}{}".format(cell[0] + 1, chr(cell[1] + ord('A'))), ship))), ships)))
 
     def enemy_step(self, cell_0, cell_1):
         cell = (int(cell_0) - 1, int(ord(cell_1) - ord('a')))
         if self.table[cell[0]][cell[1]] == '@' or self.table[cell[0]][cell[1]] == '*' or self.table[cell[0]][cell[1]] == '#':
-            logging.info("User reapeated his move")
+            logging.info("User repeated his move")
             if self.table[cell[0]][cell[1]] == '@' or self.table[cell[0]][cell[1]] == '#':
-                answer = "injure \n But you made this move before"
+                answer = "injure\nBut you made this move before"
             elif self.table[cell[0]][cell[1]] == '*':
-                answer = "miss \n But you made this move before"
+                answer = "miss\nBut you made this move before"
         if self.table[cell[0]][cell[1]] == 2:
             if self.injure_my_ship(cell) == 0:
                 answer = "kill"
@@ -127,16 +113,16 @@ class Robot:
         else:
             answer = "miss"
             self.table[cell[0]][cell[1]] = '*'
-        logging.info("user " + answer)
+        logging.info("user {}".format(answer))
         self.check_win_enemy()
         if self.win_enemy :
             logging.info("User win")
-            return answer + "\n" + "You win \n If you want to play again write 'play'"
+            return "{}\nYou win \n If you want to play again write 'play'".format(answer)
         cell = self.my_step()
         if cell == (-1,-1):
             return "You made a mistake in your answers"
         self.my_previous_step = cell
-        logging.info("Bot chose a cell: (" + str(cell[0]) + ' ' + str(cell[1]) + ")")
+        logging.info("Bot chose a cell: ({} {})".format(cell[0], cell[1]))
         return  "{} \n {} {}".format(answer, str(cell[0] + 1), str(chr(ord('A') + cell[1])))
 
     def my_step(self):
@@ -146,8 +132,8 @@ class Robot:
             else:
                 return self.find_ship()
         except:
-            logging.info("User made a mistake in his answers")
-            return (-1,-1)
+            logging.info("User made a mistake in his answers.")
+            return -1, -1
 
     def find_neighbour_deck(self):
         possible_cells = []
@@ -183,18 +169,9 @@ class Robot:
         return cell
 
     def find_ship(self):
-        if self.mode == 'easy':
-            return self.find_ship_easy()
-        else:
-            return self.find_ship_hard()
-
-    def find_ship_easy(self):
         cell = random.choice(self.enemy_rest_cells)
         self.enemy_rest_cells.remove(cell)
         return cell
-
-    def find_ship_hard(self):
-        return 0
 
     def injure_my_ship(self, cell):
         for ship in self.rest_ships:
@@ -242,7 +219,7 @@ class Robot:
         for deck in self.current_enemy_ship:
             for direction in all_directions:
                 cell = (deck[0] + direction[0], deck[1] + direction[1])
-                if 0 <= cell[0] < self.size and 0 <= cell[1] < self.size and self.enemy_table[cell[0]][cell[1]] == 0:
+                if 0 <= cell[0] < self.size and 0 <= cell[1] < self.size and not self.enemy_table[cell[0]][cell[1]]:
                     self.enemy_table[cell[0]][cell[1]] = 1
                     self.enemy_rest_cells.remove(cell)
 
@@ -336,7 +313,7 @@ class Robot:
         logging.info("User message: " + message)
         commands = message.split()
         cmd = commands[0]
-        if cmd.lower() == "hi" or cmd.lower() == "hello":
+        if cmd.lower() in ["hi", "hello"]:
             self.previous_command = "hi"
             return "Hello! \n Do you want to play Seabatttle?"
 
@@ -360,16 +337,17 @@ class Robot:
 
         elif cmd.lower() == "ships":
             logging.info("User requests ships")
-            return self.print_rest_ships()
+            return self.get_rest_ships(True)
+
         elif self.win_me or self.win_enemy:
             logging.warning("Users message is incorrect")
-            return "The gave is over. \n If you want to play again write 'play'"
+            return "The gave is over. \nIf you want to play again write 'play'"
 
         elif self.previous_command == "play" or self.previous_command == "answer":
             return self.handling_cell_selection(commands)
 
         elif self.previous_command == "cell":
-            if (cmd.lower() == "miss" or cmd.lower() == "injure" or cmd.lower() == "kill") and len(commands) == 1:
+            if cmd.lower() in ["miss", "injure", "kill"] and len(commands) == 1:
                 self.previous_command = "answer"
                 try:
                     return self.enemy_answer(cmd.lower())
